@@ -1,0 +1,452 @@
+---
+title: "PCM_S9"
+author: "Marcial Escudero"
+date: "2024-01-17"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+TASAS QUE DIVERSIFICACIÓN QUE VARÍAN A LO LARGO DEL TIEMPO
+
+Hay varias teorías que apoyan la posibilidad de que las tasas de diversificación varíen a lo largo del tiempo. Un caso claro es cuando se coloniza una nueva área o después de un proceso de extinción masiva se presupone que las tasas de diversificación serán mayores ya que hay muchos nichos disponibles que se irán rellenando a lo largo del tiempo, las tasas de diversificación van descendiendo durante este proceso (Schluter, 2000). También ante procesos las largo de cambio ambiental se pueden esperar procesos de aumento o descenso de las tasas de diversificación (Sepkoski, 1981).
+
+Uno de los modelos más usados para modelizar el cambio de la tasas de diversificación a lo largo del tiempo es el modelo exponencial (Morlon et al., 2010).
+
+Podemos representar cómo se verían las tasas de especiación y extinción a lo largo del tiempo en un modelo en que ambas son constantes, en un modelo en que desciende la tasa de especiación o asciende la de extinción o en um modelo en donde ambas tasas cambian.
+
+```{r}
+## set sequence of time intervals
+t<-seq(0,35.4,length.out=100)
+## set plotting parameters
+par(mfrow=c(2,2),bty="n",las=1)
+## panel a) constant speciation and extinction
+## compute speciation/extinction through time
+b<-rep(3,length(t))
+d<-rep(1,length(t))
+## plot curve
+plot(t,b,type="l",col="black",lwd=3,ylim=c(0,5),xlab="time", ylab=expression(paste("rate (",lambda," or ",mu,")")))
+lines(t,d,col="lightgray",lwd=3)
+mtext("(a)",line=1,adj=0)
+## panel b) declining speciation, constant extinction
+## compute speciation or extinction through time
+l=3
+a=0.1
+b<-l*exp(-a*t)
+d<-rep(1,length(t))
+## plot curve
+plot(t,b,type="l",col="black",lwd=3,ylim=c(0,5),xlab="time",ylab=expression(paste("rate (",lambda," or ",mu,")")))
+lines(t,d,col="lightgray",lwd=3)
+legend("topright",lwd=3,col=c("black","lightgray"),legend=c(expression(paste("speciation (",lambda,")")),expression(paste("extinction (",mu,")"))))
+mtext("(b)",line=1,adj=0)
+## panel c) increasing extinction, constant speciation## compute speciation/extinction through time
+l=1
+a=-0.05
+b<-rep(3,length(t))
+d<-l*exp(-a*t)
+## plot curve
+plot(t,b,type="l",col="black",lwd=3,ylim=c(0,5),xlab="time",ylab=expression(paste("rate (",lambda," or ",mu,")")))
+lines(t,d,col="lightgray",lwd=3)
+mtext("(c)",line=1,adj=0)
+## panel d) both speciation & extinction change through time## compute speciation/extinction through time
+lambda.l=3
+lambda.a=0.1
+mu.l=1
+mu.a=-0.05
+b<-lambda.l*exp(-lambda.a*t)
+d<-mu.l*exp(-mu.a*t)
+## plot curve
+plot(t,b,type="l",col="black",lwd=3,ylim=c(0,5),xlab="time",ylab=expression(paste("rate (",lambda," or ",mu,")")))
+lines(t,d,col="lightgray",lwd=3)
+mtext("(d)",line=1,adj=0)
+     
+```
+
+Para ajustar este tipo de modelos en datos reales usaremos el paquete de R diversichrom (Fitzjohn, 2010).
+Este paquete está perfectamente preparado para ajustar modelos donde las tasas tanto de especiación como de extinción cambian a lo largo del tiempo. Además se pueden ajustar lo modelos mediante maximum likelihood o mediante MCMC bayesiano.
+Vamos a utilizar un dataset de ballenas y delfines (Morlon et al., 2011).
+
+Carguemos los dataset y échemosles un vistazo.
+
+```{r}
+## load phytools
+library(phytools)
+## read whale tree from file
+whale.tree<-read.tree(file="Cetacea.phy")
+
+## compute the dimensions of the plotting area without
+## graphing our tree
+plotTree(whale.tree,fsize=0.4,direction="leftwards",ftype="i",mar=c(5.1,0.1,0.1,0.1),plot=FALSE,lwd=1,offset=0.25)
+## extract the x-limits for plotting, and flip them
+xlim<-get("last_plot.phylo",envir=.PlotPhyloEnv)$x.lim[2:1]
+## graph the tree with the axis flipped
+plotTree(whale.tree,fsize=0.4,direction="leftwards",ftype="i",mar=c(5.1,0.1,0.1,0.1),plot=TRUE,xlim=xlim,lwd=1,add=TRUE,offset=0.25)
+## add an axis
+axis(1,at=seq(0,30,by=10),cex.lab=0.6)
+## add an x-axis label
+title(xlab="time (mybp)",cex=0.7)
+par(font=3)
+## add node index labels
+whale.tree$node.label<-paste("n",1:whale.tree$Nnode,sep="")
+labelnodes(whale.tree$node.label,1:whale.tree$Nnode+Ntip(whale.tree),interactive=FALSE,cex=0.4,bg="lightblue",shape="ellipse")
+
+```
+
+Primero vamos a ajustar el modelo de birth-death que ya aprendimos en la sesión anterior en donde la tasas de especiación y extinción son constantes a lo largo del tiempo.
+Para ajustar los modelos con tasas de que varían a lo largo de tiempo tal y como está implementado en diversitree necestiatmos valores de partida de los parámetros. Vamos a calcular los valores de esos parámetros con la función fit.bd de phytools.
+
+```{r}
+fit.bd(whale.tree,rho=Ntip(whale.tree)/89)
+```
+
+Ahora sí ajustemos el modelo con diversitree usando los valores iniciales de los parámetros calculados por la función fit.bd
+
+```{r}
+## load diversitree
+library(diversitree)
+## fit our birth-death model, as in chapter 9
+bd_model<-make.bd(tree=whale.tree,sampling.f=Ntip(whale.tree)/89)
+st<-c(0.1,0.01)
+bd_mle<-find.mle(func=bd_model,x.init=st)
+bd_mle
+```
+
+Y ahora hagamoslo con MCMC bayesiano.
+
+```{r}
+bd_res_bayes<-mcmc(lik=bd_model,x.init=st,nsteps=10000,w=0.01,print.every=1000)
+
+```
+
+Veamos los resultados tras hacer el burn-in
+
+```{r}
+## remove 1,000 samples for burn-in
+bd_res_bayes<-bd_res_bayes[-(1:1000),]
+## pull out lambda and mu
+postSamples<-bd_res_bayes[,c("lambda","mu")]
+## create density plots for lambda and mu
+profiles.plot(postSamples,col.line=c("black","gray"),las=1,bty="n",cex.axis=0.7,cex.lab=0.8)
+legend("topright",c(expression(paste("speciation (",lambda,")")),expression(paste("extinction (",mu,")"))),cex=0.8,pch=22,pt.cex=1.6,bty="n",pt.bg=make.transparent(c("black","gray"),0.5))
+
+```
+
+Hasta ahora, todo lo que habíamos visto en la sesión anterior.
+
+Ahora vamos a ajustar un modelo en donde en donde la tasa de espeicación cambia y la tasas de extinción se mantiene constante a lo largo del tiempo.
+
+Esto correspondo a opción b del panel inicial.
+
+En vez de usar la función make.bd usaremos la función make.bd.t que es similar a la anterior pero incluye un parámetro extra que es la función que usaremos para analizar como cambia la especiación o la extinción en función del tiempo.
+Vamos a usar la función exponencial para la especiación y una constante para la extinción.
+
+```{r}
+## make likelihood function
+bvar_model<-make.bd.t(whale.tree,sampling.f=87/89,functions=c("exp.t","constant.t"))
+## choose starting values of parameters
+st<-c(0.1,0.01,0.01)
+## optimize likelihood function
+bvar_mle<-find.mle(bvar_model,st)
+bvar_mle
+```
+
+El valor de lambda.l es el valor de especiación en la raiz de la filogenia y el valor de lambda.a el valor ajustado de la función exponencial (es contraintuitivo que este valor sea positivo, ya que representa una tasa a la cual disminuya la especiación).
+Vamos a representar el modelo para verlo mejor.
+
+```{r}
+## extract parameter values from our fitted model
+lambda.l<-bvar_mle$par["lambda.l"]
+lambda.a<-bvar_mle$par["lambda.a"]
+mu<-bvar_mle$par["mu"]
+## create exponential or linear functions
+b<-lambda.l*exp(-lambda.a*t)
+d<-rep(mu,length(t))
+## set plotting parameters
+par(mar=c(5.1,4.1,1.1,2.1))
+## plot our fitted model
+plot(t,b,type="l",col="black",lwd=3,ylim=c(0,0.15),bty="n",xlab="time",las=1,cex.axis=0.8,ylab=expression(paste("rate (",lambda," or ",mu,")")))
+lines(t,d,col="lightgray",lwd=3)
+legend("topright",lwd=3,col=c("black","lightgray"),legend=c(expression(paste("speciation (",lambda,")")),expression(paste("extinction (",mu,")"))),cex=0.8,bty="n")
+
+```
+
+Aunque sea dificil de ver, la recta que representa la especiación está un poco inclinada hacia abajo.
+
+Ahora vamos a ajustar nuestro modelo pero con MCMC bayesiano.
+
+
+```{r}
+bvar_res_bayes<-mcmc(lik=bvar_model,x.init=bvar_mle$par,nsteps=1000,w=0.01,print.every=100)
+```
+
+Corremos 1000 iteraciones (seguramente no sean suficientes pero lo haremos por razones prácticas).
+Acuerdate de que cada vez que corras un MCMC bayesiano debes de comprobar la convergencia del modelo tal y como lo hicimos con el paquete coda en la sesión anterior.
+
+Vamos a ver los resultados obtenidos (después de hacer un burn-in del 10%)
+
+```{r}
+# trim burn-inb
+var_res_bayes<-bvar_res_bayes[-(1:100),]
+## extract parameters
+postSamples<-bvar_res_bayes[,c("lambda.l","lambda.a","mu")]
+## thin posterior sample
+thinnedPosterior<-postSamples[round(seq(1,nrow(postSamples),length.out=100)),]
+## set plotting parameters and open plot
+par(mar=c(5.1,4.1,1.1,2.1))
+plot(NULL,xlim=c(0,35.4),ylim=c(0,0.22),bty="n",xlab="time",las=1,ylab=expression(paste("rate (",lambda," or ",mu,")")),cex.axis=0.8)
+legend("topright",lwd=3,col=c("black","lightgray"),legend=c(expression(paste("speciation (",lambda,")")),expression(paste("extinction (",mu,")"))),cex=0.8,bty="n")
+## add all curves to our plot
+for(i in 1:nrow(thinnedPosterior)){
+  lambda.l<-thinnedPosterior[i,"lambda.l"]
+  lambda.a<-thinnedPosterior[i,"lambda.a"]
+  mu<-thinnedPosterior[i,"mu"]
+  b<-lambda.l*exp(-lambda.a*t)
+  d<-rep(mu,length(t))
+  lines(t,b,col=make.transparent("black",0.5),lwd=1)
+  lines(t,d,col=make.transparent("lightgray",0.5),lwd=1)
+  }
+```
+
+Esto muestra, a traves de nuestro muestreo en el MCMC, como lambda tiende a descender con el tiempo pero muy poco. 
+
+
+Ahora vamos a ajustar un modelo en donde la especiación es constante y la extinción varía a lo largo de tiempo.
+
+```{r}
+## make time-varying extinction model
+dvar_model<-make.bd.t(whale.tree,sampling.f=87/89,functions=c("constant.t","exp.t"))
+st<-c(0.1,0.01,0.01)
+## optimize model
+dvar_mle<-find.mle(dvar_model, st)
+dvar_mle
+```
+
+El valor de mu.a es positivo por lo que corresponde a una función en donde la tasa de extinción desciende a lo largo del tiempo.
+
+Finalmente vamos a ajustar un modelo donde tanto la tasa de extinción como de especiación cambian a lo largo del tiempo.
+
+```{r}
+## make time-varying speciation & extinction model
+bdvar_model<-make.bd.t(whale.tree,sampling.f=87/89,functions=c("exp.t","exp.t"))
+st<-c(0.1,-0.01,0.01,0.01)
+## optimize model
+bdvar_mle<-find.mle(bdvar_model,st)
+bdvar_mle
+```
+
+Veamos los modelos ajustados.
+
+```{r}
+## set plotting parameters
+par(mfrow=c(2,1),mar=c(5.1,4.1,2.1,2.1))
+## extract fitted model coefficients
+lambda<-dvar_mle$par["lambda"]
+mu.l<-dvar_mle$par["mu.l"]
+mu.a<-dvar_mle$par["mu.a"]
+b<-rep(lambda,length(t))
+d<-mu.l*exp(-mu.a*t)
+## plot time-varying extinction model
+plot(t,b,type="l",col="black",lwd=3,ylim=c(0,0.15),bty="n",xlab="time",las=1,cex.axis=0.8,ylab=expression(paste("rate (",lambda," or ",mu,")")))
+lines(t,d,col="lightgray",lwd=3)
+legend("topright",lwd=3,col=c("black","lightgray"),legend=c(expression(paste("speciation (",lambda,")")),expression(paste("extinction (",mu,")"))),cex=0.8,bty="n")
+mtext("(a)",line=0.5,adj=0)
+## extract fitted model coefficients
+lambda.l<-bdvar_mle$par["lambda.l"]
+lambda.a<-bdvar_mle$par["lambda.a"]
+mu.l<-dvar_mle$par["mu.l"]
+mu.a<-dvar_mle$par["mu.a"]
+b<-lambda.l*exp(-lambda.a*t)
+d<-mu.l*exp(-mu.a*t)
+## plot time-varying speciation & extinction model
+plot(t,b,type="l",col="black",lwd=3,ylim=c(0,0.15),bty="n",xlab="time",las=1,cex.axis=0.8,ylab=expression(paste("rate (",lambda," or ",mu,")")))
+lines(t,d,col="lightgray",lwd=3)
+mtext("(b)",line=0.5,adj=0)
+```
+
+Una vez ploteado parece dificil ver diferencias entre ellos.
+
+Por supuesto es posible también ajustar los modelo con MCMC bayesiano.
+
+Pero realmente lo más importante aqui sería ver que modelo presenta mejor ajuste.
+
+```{r}
+aic<-AIC(bd_mle,bvar_mle,dvar_mle,bdvar_mle)
+rownames(aic)<-c("constant-rate","variable-speciation","variable-extinction","variable speciation & extinction")
+print(aic)
+```
+
+Como era de esperar el meojr modelo es de tasas de especiación y extinción constantes.
+
+
+MODELOS DE DIVERSIFICACIÓN DEPENDIENTES DE LA RIQUEZA DE LINAJES O ESPECIES
+
+Muchos investigadores han sugerido que las tasas de espeicación y extinción pueden ser dependientes no del tiempo sino del número de linajes (Rabosky and Hurlbert 2015; but see Harmon and Harrison, 2015).
+
+En realidad en muchos casos los modelos dependientes del tiempo se han usado como aproximaciones de los modelos de dependencia de diversidad. Pero esto solo es verdad cuando hay una correlación entre el tiempo y la diversidad.
+Pero modelos dependiente directamente de diversidad han sido también desarrollados more directly (Etienne et al. 2012, 2016;Etienne and Haegeman 2012).
+
+Veamos como hacer esto con el paquete DDD y usando nuestro data set de ballenas y delfines.
+
+Lo primero que haremos es representar los tiempos de ramificación de la filogenia y los representaremos.
+
+```{r}
+cbt<-branching.times(whale.tree)
+cbt
+
+
+## use plotTree with plot=FALSE to obtain plotting
+## parameters
+plotTree(whale.tree,ftype="off",direction="leftwards",xlim=c(max(nodeHeights(whale.tree)),0),lwd=1,plot=FALSE,mar=c(5.1,1.1,0.1,1.1),ylim=c(0,Ntip(whale.tree)))
+## draw a set of lines onto our graph
+nulo<-sapply(cbt,function(x,N) lines(rep(x,2),y=c(1,N),col="lightblue",lty="dotted"),N=Ntip(whale.tree))
+## add a temporal axis
+axis(1,cex.lab=0.8)
+title(xlab="time before present (ma)")
+## plot our tree
+plotTree(whale.tree,ftype="off",direction="leftwards",xlim=c(max(nodeHeights(whale.tree)),0),add=TRUE,lwd=1,mar=c(4.1,1.1,0.1,1.1),ylim=c(0,Ntip(whale.tree)))
+## add points at branching events
+points(get("last_plot.phylo",envir=.PlotPhyloEnv)$xx[1:whale.tree$Nnode+Ntip(whale.tree)],get("last_plot.phylo",envir=.PlotPhyloEnv)$yy[1:whale.tree$Nnode+Ntip(whale.tree)],pch=21,bg="lightblue")
+
+```
+
+Y ahora vamos ajustar el modelo de espeación y extinción constante, los modelos en los que estos varian y también nuestro modelo dependiente de la diversidad de linajes. Los ajustaremos todos con el paquete DDD.
+
+```{r}
+library(DDD)
+bd_res_ddd<-bd_ML(brts=cbt,missnumspec=2,cond=1)
+bd_res_ddd
+```
+
+Podemos apreciar que las estimas de especiación y extinción son identicas a las calculadas con los paquetes phytools y diversitree pero los valores de ML son totalmente diferentes. Esto es porque phytools y diversitree usan los tiempos de ramificación para ajustar el modelo y DDD usa directamente la filogenia (se pueden usar ambas fuentes de datos).
+
+Pero DDD nos permite hacerlos también con los tiempos ramificación (con btorph=0). Lo haremos y comprobamos que no hay diferencia en los resultados.
+
+```{r}
+bd_res_ddd<-bd_ML(brts=cbt,missnumspec=2,cond=1,btorph=0)
+bd_res_ddd
+```
+
+Y ahora vamos a ajustar los modelos de especiación y extinción dependientes del tiempo (con el argumento tdmodel=1 le indicamos que especición y/o extinción pueden ser dependientes exponencialmente del tiempo).
+
+```{r}
+
+bdvar_res_ddd<-bd_ML(brts=cbt,missnumspec=2,cond=1,tdmodel=1,initparsopt=c(0.1,0.1,0.1,0.1),idparsopt=1:4,btorph=0)
+bdvar_res_ddd
+
+```
+
+Finalmente vamos a ajuster nuestra función en la que especiación y extinción dependen de la diversidad de linajes.
+
+```{r}
+dd_res_ddd<-dd_ML(brts=cbt,missnumspec=2,cond=1,btorph=0)
+dd_res_ddd
+```
+
+En este modelo se calcula K que es la capacidad de carga del proceso de especiación (número máximo de especies o linajes que soporta el sistema) y donde la diversificacion es cero, es decir, espeicación y extinción alcanzar el mismo valor.
+En ese caso la capacidad de carga es más de 200 linajes.
+
+Finalmente vamos a comparar los modelos ajustados con DDD.
+
+```{r}
+lnL<-c(bd_res_ddd$loglik,bdvar_res_ddd$loglik,dd_res_ddd$loglik)
+k<-c(bd_res_ddd$df,bdvar_res_ddd$df,dd_res_ddd$df)
+aic<-2*k-2*lnL
+data.frame(model=c("birth-death","variable-rate","density-dependent"),logLik=lnL,df=k,AIC=aic)
+```
+
+Podemos apreciar como el modelo constante sigue siendo el mejor modelo.
+
+
+
+DIVERSIFICACIÓN VARIABLES A LO LARGO DE LOS CLADOS
+
+De nuevo varios autores han sugerido que las tasas de diversificación pueden variar entre clados (Morlon et al., 2011) y curiosamente dentro de los clados pueden después variar en función del tiempo o de las especies (Morlon et al., 2011).
+
+Vamos a ver estos modelos de variación entre clados con nuestro dataset de ballenas y delfines, de hecho veremos si hay cambios en la tasa de diversificación entre dos clados principales de la filogenia. Vamos a comprobar si el clado Odonceti (nodo 42 de la filogenia) tiene tasas de diversificación diferentes al resto.
+Para ver este modelo usaremos la función make.bd.split de diversitree y luego ajustaremos el ML con find.mle.
+
+```{r}
+## make birth-death split model
+lik.split<-make.bd.split(whale.tree,nodes="n42",sampling.f=Ntip(whale.tree)/89)
+## optimize model using find.mle
+split_mle<-find.mle(lik.split,x.init=c(0.1,0.01,0.1,0.01))
+split_mle
+```
+
+Comparemos ahora con los modelos que hemos ajustado antes.
+
+```{r}
+aic<-AIC(bd_mle,bvar_mle,dvar_mle,bdvar_mle,split_mle)
+rownames(aic)<-c("constant-rate","variable-speciation","variable=extinction","variable speciation & extinction","clade-specific variable rate")
+print(aic)
+```
+
+Podemos ver como este modelo es finalmente mejor que el modelo constante.
+
+
+Finalemente vamos a correr nuestro análisis de tasas de diversificación fuera de R. Usaremos el popular software BAMM (Rabosky 2014). Este software usa rjMCMC al igual que vimos en bayou para hace una busqueda bayesiana que muestrea la probabilidad a posteriori no solo de los parámetros sino de diferentes modelos.
+Para ellos coge la filogenia que hemos venido usando de ballenas y delfines ("whaletree.tre") y el archivo de control de análisis de BAMM ("divcontrol.txt") que hay en este proyecto, los copias y los pegas en la carpeta donde tengas instalado BAMM.
+Corre bamm con la siguiente linea de comando "./bamm -c divcontrol.txt" en tu teminal de linux, mac o msdos.
+Luego copia pega todos los archivos de salida y pegalos en la carpeta de este proyecto de R.
+Aohra vamos a procesar los datos con el paquete de R BAMMtools.
+
+```{r}
+library(BAMMtools)
+library(coda)
+
+## load data
+mytree <- read.tree("whaletree.tre")
+mcmcout <- read.csv("mcmc_out.txt")
+
+## create edata
+edata <- getEventData(mytree, eventdata = "event_data.txt", burnin=0.15)
+
+
+#### Check convergence
+plot(mcmcout$logLik ~ mcmcout$generation)
+
+burnstart <- floor(0.15 * nrow(mcmcout))
+postburn <- mcmcout[burnstart:nrow(mcmcout), ]
+
+effectiveSize(postburn$N_shifts)
+effectiveSize(postburn$logLik)
+
+
+
+### Shift probabilities
+shift_probs <- summary(edata)
+shift_probs
+
+
+### Bayes factors
+bfmat <- computeBayesFactors(postburn, expectedNumberOfShifts=1, burnin=0.15)
+bfmat
+
+#### PLOT CREDIBLE SHIFTS
+css <- credibleShiftSet(edata, expectedNumberOfShifts=1, threshold=5, set.limit = 0.95)
+css
+plot.credibleshiftset(css,spex = "netdiv")
+
+
+### PLOT BEST SHIFT
+par(mfrow=c(1,1))
+best <- getBestShiftConfiguration(edata, expectedNumberOfShifts=1)
+best
+plot.bammdata(best, lwd = 2,spex = "netdiv",label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(best, cex=3)
+best$eventData
+
+### RATE through time
+st <- max(branching.times(mytree))
+plotRateThroughTime(edata, intervalCol="red", avgCol="red", start.time=st, ylim=c(0,1), cex.axis=1,ratetype='netdiv')
+text(x=30, y= 0.8, label="All whales", font=4, cex=1.0, pos=4)
+plotRateThroughTime(edata, intervalCol="blue", avgCol="blue", start.time=st, node=140, ylim=c(0,1), cex.axis=1,ratetype='netdiv')
+text(x=15, y= 0.8, label="Odonceti", font=4, cex=1.0, pos=4)
+
+phylorates <- plot(edata, breaksmethod='jenks', show = FALSE)
+ratesHistogram(phylorates, plotBrks = FALSE, xlab = 'diversification rates')
+
+```
+
+
