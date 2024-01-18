@@ -450,3 +450,15 @@ ratesHistogram(phylorates, plotBrks = FALSE, xlab = 'diversification rates')
 ```
 
 
+######################
+
+ACTIVIDADES
+
+1. Ajusta todos los modelos que hemos aprendido en esta sesión pero con el árbol "Anolis.tre".
+
+```{r}
+#Your code here
+
+
+```
+
