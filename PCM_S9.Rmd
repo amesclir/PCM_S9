@@ -458,7 +458,7 @@ ratesHistogram(phylorates, plotBrks = FALSE, xlab = 'diversification rates')
 
 ACTIVIDADES
 
-1. Ajusta todos los modelos birth-death, birth-death con tasas que varían exponencialmente y birth-death con tasas que varían en función del número de especies pero con el árbol "Anolis.tre".
+1. Ajusta todos los modelos birth-death, birth-death con tasas que varían exponencialmente y birth-death con tasas que varían en función del número de especies pero con el árbol "Anolis.tre" (asumiendo un muestreo completo en la filogenia).
 
 ```{r}
 #Your code here
