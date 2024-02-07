@@ -9,7 +9,7 @@ editor_options:
 
 TASAS QUE DIVERSIFICACIÓN QUE VARÍAN A LO LARGO DEL TIEMPO
 
-Hay varias teorías que apoyan la posibilidad de que las tasas de diversificación varíen a lo largo del tiempo. Un caso claro es cuando se coloniza una nueva área o después de un proceso de extinción masiva se presupone que las tasas de diversificación serán mayores ya que hay muchos nichos disponibles que se irán rellenando a lo largo del tiempo, las tasas de diversificación van descendiendo durante este proceso (Schluter, 2000). También ante procesos las largo de cambio ambiental se pueden esperar procesos de aumento o descenso de las tasas de diversificación (Sepkoski, 1981).
+Hay varias teorías que apoyan la posibilidad de que las tasas de diversificación varíen a lo largo del tiempo. Un caso claro es cuando se coloniza una nueva área o después de un proceso de extinción masiva se presupone que las tasas de diversificación serán mayores ya que hay muchos nichos disponibles que se irán rellenando a lo largo del tiempo, las tasas de diversificación van descendiendo durante este proceso (Schluter, 2000). También ante procesos largo de cambio ambiental se pueden esperar procesos de aumento o descenso de las tasas de diversificación (Sepkoski, 1981).
 
 Uno de los modelos más usados para modelizar el cambio de la tasas de diversificación a lo largo del tiempo es el modelo exponencial (Morlon et al., 2010).
 
@@ -62,7 +62,7 @@ mtext("(d)",line=1,adj=0)
      
 ```
 
-Para ajustar este tipo de modelos en datos reales usaremos el paquete de R diversichrom (Fitzjohn, 2010).
+Para ajustar este tipo de modelos en datos reales usaremos el paquete de R diversitree (Fitzjohn, 2012).
 Este paquete está perfectamente preparado para ajustar modelos donde las tasas tanto de especiación como de extinción cambian a lo largo del tiempo. Además se pueden ajustar lo modelos mediante maximum likelihood o mediante MCMC bayesiano.
 Vamos a utilizar un dataset de ballenas y delfines (Morlon et al., 2011).
 
@@ -137,7 +137,8 @@ Ahora vamos a ajustar un modelo en donde en donde la tasa de espeicación cambia
 
 Esto correspondo a opción b del panel inicial.
 
-En vez de usar la función make.bd usaremos la función make.bd.t que es similar a la anterior pero incluye un parámetro extra que es la función que usaremos para analizar como cambia la especiación o la extinción en función del tiempo.
+
+Ahora, en vez de usar la función make.bd usaremos la función make.bd.t que es similar a la anterior pero incluye un parámetro extra que es la función que usaremos para analizar como cambia la especiación o la extinción en función del tiempo.
 Vamos a usar la función exponencial para la especiación y una constante para la extinción.
 
 ```{r}
@@ -150,7 +151,9 @@ bvar_mle<-find.mle(bvar_model,st)
 bvar_mle
 ```
 
-El valor de lambda.l es el valor de especiación en la raiz de la filogenia y el valor de lambda.a el valor ajustado de la función exponencial (es contraintuitivo que este valor sea positivo, ya que representa una tasa a la cual disminuya la especiación).
+El valor de lambda.l es el valor de especiación en la raiz de la filogenia y el valor de lambda.a el valor ajustado de la función exponencial (es contra intuitivo que este valor sea positivo, ya que representa una tasa a la cual disminuya la especiación).
+
+
 Vamos a representar el modelo para verlo mejor.
 
 ```{r}
@@ -170,17 +173,17 @@ legend("topright",lwd=3,col=c("black","lightgray"),legend=c(expression(paste("sp
 
 ```
 
-Aunque sea dificil de ver, la recta que representa la especiación está un poco inclinada hacia abajo.
+Aunque sea difícil de ver, la recta que representa la especiación está un poco inclinada hacia abajo.
+
 
 Ahora vamos a ajustar nuestro modelo pero con MCMC bayesiano.
-
 
 ```{r}
 bvar_res_bayes<-mcmc(lik=bvar_model,x.init=bvar_mle$par,nsteps=1000,w=0.01,print.every=100)
 ```
 
 Corremos 1000 iteraciones (seguramente no sean suficientes pero lo haremos por razones prácticas).
-Acuerdate de que cada vez que corras un MCMC bayesiano debes de comprobar la convergencia del modelo tal y como lo hicimos con el paquete coda en la sesión anterior.
+Acuérdate de que cada vez que corras un MCMC bayesiano debes de comprobar la convergencia del modelo tal y como lo hicimos con el paquete coda en la sesión anterior.
 
 Vamos a ver los resultados obtenidos (después de hacer un burn-in del 10%)
 
@@ -222,6 +225,7 @@ dvar_mle
 ```
 
 El valor de mu.a es positivo por lo que corresponde a una función en donde la tasa de extinción desciende a lo largo del tiempo.
+
 
 Finalmente vamos a ajustar un modelo donde tanto la tasa de extinción como de especiación cambian a lo largo del tiempo.
 
@@ -265,7 +269,7 @@ mtext("(b)",line=0.5,adj=0)
 
 Una vez ploteado parece dificil ver diferencias entre ellos.
 
-Por supuesto es posible también ajustar los modelo con MCMC bayesiano.
+Por supuesto es posible también ajustar los modelos con MCMC bayesiano.
 
 Pero realmente lo más importante aqui sería ver que modelo presenta mejor ajuste.
 
@@ -275,15 +279,15 @@ rownames(aic)<-c("constant-rate","variable-speciation","variable-extinction","va
 print(aic)
 ```
 
-Como era de esperar el meojr modelo es de tasas de especiación y extinción constantes.
+Como era de esperar el mejor modelo es de tasas de especiación y extinción constantes.
 
 
 MODELOS DE DIVERSIFICACIÓN DEPENDIENTES DE LA RIQUEZA DE LINAJES O ESPECIES
 
-Muchos investigadores han sugerido que las tasas de espeicación y extinción pueden ser dependientes no del tiempo sino del número de linajes (Rabosky and Hurlbert 2015; but see Harmon and Harrison, 2015).
+Muchos investigadores han sugerido que las tasas de especiación y extinción pueden ser dependientes no del tiempo sino del número de linajes (Rabosky & Hurlbert 2015; but see Harmon & Harrison, 2015).
 
 En realidad en muchos casos los modelos dependientes del tiempo se han usado como aproximaciones de los modelos de dependencia de diversidad. Pero esto solo es verdad cuando hay una correlación entre el tiempo y la diversidad.
-Pero modelos dependiente directamente de diversidad han sido también desarrollados more directly (Etienne et al. 2012, 2016;Etienne and Haegeman 2012).
+Pero modelos dependientes directamente de diversidad han sido también desarrollados (Etienne et al. 2012, 2016;Etienne and Haegeman 2012).
 
 Veamos como hacer esto con el paquete DDD y usando nuestro data set de ballenas y delfines.
 
@@ -309,7 +313,7 @@ points(get("last_plot.phylo",envir=.PlotPhyloEnv)$xx[1:whale.tree$Nnode+Ntip(wha
 
 ```
 
-Y ahora vamos ajustar el modelo de espeación y extinción constante, los modelos en los que estos varian y también nuestro modelo dependiente de la diversidad de linajes. Los ajustaremos todos con el paquete DDD.
+Y ahora vamos ajustar el modelo de especiación y extinción constante, los modelos en los que estos varían en función del tiempo y también nuestro modelo dependiente de la diversidad de linajes. Los ajustaremos todos con el paquete DDD.
 
 ```{r}
 library(DDD)
@@ -326,7 +330,7 @@ bd_res_ddd<-bd_ML(brts=cbt,missnumspec=2,cond=1,btorph=0)
 bd_res_ddd
 ```
 
-Y ahora vamos a ajustar los modelos de especiación y extinción dependientes del tiempo (con el argumento tdmodel=1 le indicamos que especición y/o extinción pueden ser dependientes exponencialmente del tiempo).
+Y ahora vamos a ajustar los modelos de especiación y extinción dependientes del tiempo (con el argumento tdmodel=1 le indicamos que especiación y/o extinción pueden ser dependientes exponencialmente del tiempo).
 
 ```{r}
 
@@ -342,7 +346,7 @@ dd_res_ddd<-dd_ML(brts=cbt,missnumspec=2,cond=1,btorph=0)
 dd_res_ddd
 ```
 
-En este modelo se calcula K que es la capacidad de carga del proceso de especiación (número máximo de especies o linajes que soporta el sistema) y donde la diversificacion es cero, es decir, espeicación y extinción alcanzar el mismo valor.
+En este modelo se calcula K que es la capacidad de carga del proceso de especiación (número máximo de especies o linajes que soporta el sistema) y donde la diversificacion es cero, es decir, especicación y extinción alcanzan el mismo valor.
 En ese caso la capacidad de carga es más de 200 linajes.
 
 Finalmente vamos a comparar los modelos ajustados con DDD.
@@ -358,9 +362,9 @@ Podemos apreciar como el modelo constante sigue siendo el mejor modelo.
 
 
 
-DIVERSIFICACIÓN VARIABLES A LO LARGO DE LOS CLADOS
+DIVERSIFICACIÓN VARIABLE A LO LARGO DE LOS CLADOS
 
-De nuevo varios autores han sugerido que las tasas de diversificación pueden variar entre clados (Morlon et al., 2011) y curiosamente dentro de los clados pueden después variar en función del tiempo o de las especies (Morlon et al., 2011).
+De nuevo varios autores han sugerido que las tasas de diversificación pueden variar entre clados (Morlon et al., 2011) y curiosamente dentro de los clados pueden después variar en función del tiempo o del número de especies (Morlon et al., 2011).
 
 Vamos a ver estos modelos de variación entre clados con nuestro dataset de ballenas y delfines, de hecho veremos si hay cambios en la tasa de diversificación entre dos clados principales de la filogenia. Vamos a comprobar si el clado Odonceti (nodo 42 de la filogenia) tiene tasas de diversificación diferentes al resto.
 Para ver este modelo usaremos la función make.bd.split de diversitree y luego ajustaremos el ML con find.mle.
@@ -388,7 +392,7 @@ Finalemente vamos a correr nuestro análisis de tasas de diversificación fuera 
 Para ellos coge la filogenia que hemos venido usando de ballenas y delfines ("whaletree.tre") y el archivo de control de análisis de BAMM ("divcontrol.txt") que hay en este proyecto, los copias y los pegas en la carpeta donde tengas instalado BAMM.
 Corre bamm con la siguiente linea de comando "./bamm -c divcontrol.txt" en tu teminal de linux, mac o msdos.
 Luego copia pega todos los archivos de salida y pegalos en la carpeta de este proyecto de R.
-Aohra vamos a procesar los datos con el paquete de R BAMMtools.
+Ahora vamos a procesar los datos con el paquete de R BAMMtools.
 
 ```{r}
 library(BAMMtools)
@@ -454,7 +458,7 @@ ratesHistogram(phylorates, plotBrks = FALSE, xlab = 'diversification rates')
 
 ACTIVIDADES
 
-1. Ajusta todos los modelos que hemos aprendido en esta sesión pero con el árbol "Anolis.tre".
+1. Ajusta todos los modelos birth-death, birth-death con tasas que varían exponencialmente y birth-death con tasas que varían en función del número de especies pero con el árbol "Anolis.tre".
 
 ```{r}
 #Your code here
@@ -462,3 +466,46 @@ ACTIVIDADES
 
 ```
 
+1. Corre el software bamm pero para estudiar la evolución del tamaño de la ballenas y delfines en la filogenia con un modelo browniano con múltiples tasas y búsqueda rjMCMC (usa para ellos los archivos disponibles en este proyecto de R -traitcontrol.txt , whale_size.txt y whaletree.tre-).
+
+```{r}
+#Your code here
+
+
+```
+
+BIBLOGRAFÍA BÁSICA
+
+FitzJohn, R. G. 2012. Diversitree: Comparative phylogenetic analyses of diversification in R. Methods Ecol.
+Evol. 3:1084–92.
+
+
+
+BIBLIOGRAFÍA RECOMENDADA
+
+Etienne, R. S., and B. Haegeman. 2012. A conceptual and statistical framework for adaptive radiations
+with a key role for diversity dependence. Am. Nat. 180:E75–89.
+
+Etienne, R. S., and B. Haegeman. 2021. DDD: Diversity-Dependent Diversification. R package version
+5.0. https://CRAN.R-project.org/package=DDD.
+
+Etienne, R. S., B. Haegeman, T. Stadler, T. Aze, P. N. Pearson, A. Purvis, and A. B. Phillimore. 2012.
+Diversity-dependence brings molecular phylogenies closer to agreement with the fossil record.
+Proc. Biol. Sci. 279:1300–09.
+
+Harmon, L. J., and S. Harrison. 2015. Species diversity is dynamic and unbounded at local and continental
+scales. Am. Nat. 185:584–93.
+
+Morlon, H., T. L. Parsons, and J. B. Plotkin. 2011. Reconciling molecular phylogenies with the fossil record.
+Proc. Natl. Acad. Sci. U. S. A. 108:16327–32.
+
+Rabosky, D. L. 2014. Automatic detection of key innovations, rate shifts, anddiversity-dependence on
+phylogenetic trees. PLoS One 9:e89543.
+
+Rabosky, D. L., and A. H. Hurlbert. 2015. Species richness at continental scales is dominated by ecological
+limits. Am. Nat. 185:572–83.
+
+Schluter, D. 2000. The ecology of adaptive radiation. Oxford: Oxford University Press.
+
+Sepkoski, J. J. 1981. A factor analytic description of the phanerozoic marine fossil record. Paleobiology
+7:36–53.
