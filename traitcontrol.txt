@@ -96,7 +96,7 @@ betaIsTimeVariablePrior = 1
 # MCMC SIMULATION SETTINGS & OUTPUT OPTIONS
 ################################################################################
 
-numberOfGenerations = 100000
+numberOfGenerations = 5000000
 # Number of generations to perform MCMC simulation
 
 mcmcOutfile = mcmc_out.txt
