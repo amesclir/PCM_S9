@@ -188,7 +188,7 @@ Acuérdate de que cada vez que corras un MCMC bayesiano debes de comprobar la co
 Vamos a ver los resultados obtenidos (después de hacer un burn-in del 10%)
 
 ```{r}
-# trim burn-inb
+# trim burn-in
 var_res_bayes<-bvar_res_bayes[-(1:100),]
 ## extract parameters
 postSamples<-bvar_res_bayes[,c("lambda.l","lambda.a","mu")]
@@ -458,7 +458,7 @@ ratesHistogram(phylorates, plotBrks = FALSE, xlab = 'diversification rates')
 
 ACTIVIDADES
 
-1. Ajusta todos los modelos birth-death, birth-death con tasas que varían exponencialmente y birth-death con tasas que varían en función del número de especies pero con el árbol "Anolis.tre" (asumiendo un muestreo completo en la filogenia).
+1. Ajusta todos los modelos birth-death: birh-death constantes, birth-death con tasas que varían exponencialmente y birth-death con tasas que varían en función del número de especies pero con el árbol "Anolis.tre" (asumiendo un muestreo completo en la filogenia).
 
 ```{r}
 #Your code here
@@ -466,7 +466,7 @@ ACTIVIDADES
 
 ```
 
-1. Corre el software bamm pero para estudiar la evolución del tamaño de la ballenas y delfines en la filogenia con un modelo browniano con múltiples tasas y búsqueda rjMCMC (usa para ellos los archivos disponibles en este proyecto de R -traitcontrol.txt , whale_size.txt y whaletree.tre-).
+2. Corre el software bamm pero para estudiar la evolución del tamaño de la ballenas y delfines en la filogenia con un modelo browniano con múltiples tasas y búsqueda rjMCMC (usa para ellos los archivos disponibles en este proyecto de R -traitcontrol.txt , whale_size.txt y whaletree.tre-).
 
 ```{r}
 #Your code here
