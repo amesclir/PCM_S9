@@ -7,9 +7,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-TASAS QUE DIVERSIFICACIÓN QUE VARÍAN A LO LARGO DEL TIEMPO
+TASAS DE DIVERSIFICACIÓN QUE VARÍAN A LO LARGO DEL TIEMPO
 
-Hay varias teorías que apoyan la posibilidad de que las tasas de diversificación varíen a lo largo del tiempo. Un caso claro es cuando se coloniza una nueva área o después de un proceso de extinción masiva se presupone que las tasas de diversificación serán mayores ya que hay muchos nichos disponibles que se irán rellenando a lo largo del tiempo, las tasas de diversificación van descendiendo durante este proceso (Schluter, 2000). También ante procesos largo de cambio ambiental se pueden esperar procesos de aumento o descenso de las tasas de diversificación (Sepkoski, 1981).
+Hay varias teorías que apoyan la posibilidad de que las tasas de diversificación varíen a lo largo del tiempo. Un caso claro es cuando se coloniza una nueva área o después de un proceso de extinción masiva se presupone que las tasas de diversificación serán mayores ya que hay muchos nichos disponibles que se irán rellenando a lo largo del tiempo, las tasas de diversificación van descendiendo durante este proceso (Schluter, 2000). También ante procesos largos de cambio ambiental se pueden esperar procesos de aumento o descenso de las tasas de diversificación (Sepkoski, 1981).
 
 Uno de los modelos más usados para modelizar el cambio de la tasas de diversificación a lo largo del tiempo es el modelo exponencial (Morlon et al., 2010).
 
@@ -63,7 +63,7 @@ mtext("(d)",line=1,adj=0)
 ```
 
 Para ajustar este tipo de modelos en datos reales usaremos el paquete de R diversitree (Fitzjohn, 2012).
-Este paquete está perfectamente preparado para ajustar modelos donde las tasas tanto de especiación como de extinción cambian a lo largo del tiempo. Además se pueden ajustar lo modelos mediante maximum likelihood o mediante MCMC bayesiano.
+Este paquete está perfectamente preparado para ajustar modelos donde las tasas tanto de especiación como de extinción cambian a lo largo del tiempo. Además se pueden ajustar los modelos mediante maximum likelihood o mediante MCMC bayesiano.
 Vamos a utilizar un dataset de ballenas y delfines (Morlon et al., 2011).
 
 Carguemos los dataset y échemosles un vistazo.
@@ -93,7 +93,7 @@ labelnodes(whale.tree$node.label,1:whale.tree$Nnode+Ntip(whale.tree),interactive
 ```
 
 Primero vamos a ajustar el modelo de birth-death que ya aprendimos en la sesión anterior en donde la tasas de especiación y extinción son constantes a lo largo del tiempo.
-Para ajustar los modelos con tasas de que varían a lo largo de tiempo tal y como está implementado en diversitree necestiatmos valores de partida de los parámetros. Vamos a calcular los valores de esos parámetros con la función fit.bd de phytools.
+Para ajustar los modelos con tasas de que varían a lo largo de tiempo tal y como está implementado en diversitree necesitamos valores de partida de los parámetros. Vamos a calcular los valores de esos parámetros con la función fit.bd de phytools.
 
 ```{r}
 fit.bd(whale.tree,rho=Ntip(whale.tree)/89)
@@ -133,9 +133,9 @@ legend("topright",c(expression(paste("speciation (",lambda,")")),expression(past
 
 Hasta ahora, todo lo que habíamos visto en la sesión anterior.
 
-Ahora vamos a ajustar un modelo en donde en donde la tasa de espeicación cambia y la tasas de extinción se mantiene constante a lo largo del tiempo.
+Ahora vamos a ajustar un modelo en donde en donde la tasa de especiación cambia y la tasas de extinción se mantiene constante a lo largo del tiempo.
 
-Esto correspondo a opción b del panel inicial.
+Esto correspondo a la opción b del panel inicial.
 
 
 Ahora, en vez de usar la función make.bd usaremos la función make.bd.t que es similar a la anterior pero incluye un parámetro extra que es la función que usaremos para analizar como cambia la especiación o la extinción en función del tiempo.
@@ -287,7 +287,7 @@ MODELOS DE DIVERSIFICACIÓN DEPENDIENTES DE LA RIQUEZA DE LINAJES O ESPECIES
 Muchos investigadores han sugerido que las tasas de especiación y extinción pueden ser dependientes no del tiempo sino del número de linajes (Rabosky & Hurlbert 2015; but see Harmon & Harrison, 2015).
 
 En realidad en muchos casos los modelos dependientes del tiempo se han usado como aproximaciones de los modelos de dependencia de diversidad. Pero esto solo es verdad cuando hay una correlación entre el tiempo y la diversidad.
-Pero modelos dependientes directamente de diversidad han sido también desarrollados (Etienne et al. 2012, 2016;Etienne and Haegeman 2012).
+Pero modelos dependientes directamente de diversidad han sido también desarrollados (Etienne et al. 2012, 2016; Etienne and Haegeman 2012).
 
 Veamos como hacer esto con el paquete DDD y usando nuestro data set de ballenas y delfines.
 
@@ -328,6 +328,7 @@ Pero DDD nos permite hacerlos también con los tiempos ramificación (con btorph
 ```{r}
 bd_res_ddd<-bd_ML(brts=cbt,missnumspec=2,cond=1,btorph=0)
 bd_res_ddd
+#cond=probability function
 ```
 
 Y ahora vamos a ajustar los modelos de especiación y extinción dependientes del tiempo (con el argumento tdmodel=1 le indicamos que especiación y/o extinción pueden ser dependientes exponencialmente del tiempo).
@@ -342,6 +343,7 @@ bdvar_res_ddd
 Finalmente vamos a ajuster nuestra función en la que especiación y extinción dependen de la diversidad de linajes.
 
 ```{r}
+#warning, this may take a while!!!!!
 dd_res_ddd<-dd_ML(brts=cbt,missnumspec=2,cond=1,btorph=0)
 dd_res_ddd
 ```
@@ -388,9 +390,9 @@ print(aic)
 Podemos ver como este modelo es finalmente mejor que el modelo constante.
 
 
-Finalemente vamos a correr nuestro análisis de tasas de diversificación fuera de R. Usaremos el popular software BAMM (Rabosky 2014). Este software usa rjMCMC al igual que vimos en bayou para hace una busqueda bayesiana que muestrea la probabilidad a posteriori no solo de los parámetros sino de diferentes modelos.
+Finalemente vamos a correr nuestro análisis de tasas de diversificación fuera de R. Usaremos el popular software BAMM (Rabosky 2014). Este software usa rjMCMC al igual que vimos en bayou para hace una busqueda bayesiana que muestra la probabilidad a posteriori no solo de los parámetros sino de diferentes modelos.
 Para ellos coge la filogenia que hemos venido usando de ballenas y delfines ("whaletree.tre") y el archivo de control de análisis de BAMM ("divcontrol.txt") que hay en este proyecto, los copias y los pegas en la carpeta donde tengas instalado BAMM.
-Corre bamm con la siguiente linea de comando "./bamm -c divcontrol.txt" en tu teminal de linux, mac o msdos.
+Corre bamm con la siguiente linea de comando "./bamm -c divcontrol.txt" en tu terminal de linux, mac o msdos.
 Luego copia pega todos los archivos de salida y pegalos en la carpeta de este proyecto de R.
 Ahora vamos a procesar los datos con el paquete de R BAMMtools.
 
@@ -466,7 +468,7 @@ ACTIVIDADES
 
 ```
 
-2. Corre el software bamm pero para estudiar la evolución del tamaño de la ballenas y delfines en la filogenia con un modelo browniano con múltiples tasas y búsqueda rjMCMC (usa para ellos los archivos disponibles en este proyecto de R -traitcontrol.txt , whale_size.txt y whaletree.tre-).
+2. Corre el software bamm pero para estudiar la evolución del tamaño de las ballenas y delfines en la filogenia con un modelo browniano con múltiples tasas y búsqueda rjMCMC (usa para ellos los archivos disponibles en este proyecto de R -traitcontrol.txt , whale_size.txt y whaletree.tre-).
 
 ```{r}
 #Your code here
