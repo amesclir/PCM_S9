@@ -349,7 +349,7 @@ dd_res_ddd
 ```
 
 En este modelo se calcula K que es la capacidad de carga del proceso de especiación (número máximo de especies o linajes que soporta el sistema) y donde la diversificacion es cero, es decir, especicación y extinción alcanzan el mismo valor.
-En ese caso la capacidad de carga es más de 200 linajes.
+En ese caso la capacidad de carga es más de 220 linajes.
 
 Finalmente vamos a comparar los modelos ajustados con DDD.
 
@@ -402,7 +402,7 @@ library(coda)
 
 ## load data
 mytree <- read.tree("whaletree.tre")
-mcmcout <- read.csv("mcmc_out.txt")
+mcmcout <- read.csv("./div/mcmc_out.txt")
 
 ## create edata
 edata <- getEventData(mytree, eventdata = "event_data.txt", burnin=0.15)
