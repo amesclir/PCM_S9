@@ -1,7 +1,7 @@
 Command line: ./bamm -c divcontrol.txt
 Git commit id: ab1b69be13e9841d9e103170d0f61e4324f78676
-Random seed: 1705567238
-Start time: Thu Jan 18 09:40:38 2024
+Random seed: 1771845888
+Start time: Mon Feb 23 12:24:48 2026
 
 Current parameter settings:
        acceptanceInfoFileName    acceptance_info.txt
@@ -90,5 +90,5 @@ updateRateEventNumberForBranch    0.0
  useGlobalSamplingProbability    1
    validateEventConfiguration    0
    writeMeanBranchLengthTrees    0
-End time: Thu Jan 18 09:43:53 2024
+End time: Mon Feb 23 12:26:33 2026
 

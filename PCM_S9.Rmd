@@ -405,7 +405,7 @@ mytree <- read.tree("whaletree.tre")
 mcmcout <- read.csv("./div/mcmc_out.txt")
 
 ## create edata
-edata <- getEventData(mytree, eventdata = "event_data.txt", burnin=0.15)
+edata <- getEventData(mytree, eventdata = "./div/event_data.txt", burnin=0.15)
 
 
 #### Check convergence
