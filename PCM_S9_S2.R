@@ -5,9 +5,9 @@
 
 #phenotype evolution
 mytree <- read.tree("whaletree.tre")
-mcmcout <- read.csv("./mcmc_out.txt")
+mcmcout <- read.csv("./pheno/mcmc_out.txt")
 ## create edata
-phenoedata <- getEventData(mytree, eventdata = "./event_data.txt", burnin=0.15, type = "trait")
+phenoedata <- getEventData(mytree, eventdata = "./pheno/event_data.txt", burnin=0.15, type = "trait")
 phenoedata
 #### Check convergence
 plot(mcmcout$logLik ~ mcmcout$generation)
@@ -46,3 +46,4 @@ phenobest$eventData
 
 phenophylorates <- plot(phenoedata, breaksmethod='jenks', show = FALSE)
 ratesHistogram(phenophylorates, plotBrks = FALSE, xlab = 'size evolution rates')
+
